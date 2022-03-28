@@ -179,10 +179,26 @@ func (d *Provider) generateMetaDocker(event bus.Event) (*docker.Container, *dock
 		return nil, nil
 	}
 
+	//Merge labels of k8s pod if config MergePodLabels is true
+	constanerLabels := map[string]string{}
+	if d.config.MergePodLabels {
+		podPauseContainerId := container.Labels["io.kubernetes.sandbox.id"]
+		d.logger.Debugf(" Config MergePodLabels is true, try to merge labels of container %s with labels of container %s", container.ID, podPauseContainerId)
+		if pauseContainer := d.watcher.Container(podPauseContainerId); pauseContainer != nil {
+			for k, v := range pauseContainer.Labels {
+				constanerLabels[k] = v
+			}
+		}
+	}
+
+	for k, v := range container.Labels {
+		constanerLabels[k] = v
+	}
+
 	// Don't dedot selectors, dedot only metadata used for events enrichment
 	labelMap := common.MapStr{}
 	metaLabelMap := common.MapStr{}
-	for k, v := range container.Labels {
+	for k, v := range constanerLabels {
 		safemapstr.Put(labelMap, k, v)
 		if d.config.Dedot {
 			label := common.DeDot(k)

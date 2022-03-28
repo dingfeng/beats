@@ -38,6 +38,7 @@ type Config struct {
 	Appenders      []*common.Config        `config:"appenders"`
 	Templates      template.MapperSettings `config:"templates"`
 	Dedot          bool                    `config:"labels.dedot"`
+	MergePodLabels bool                    `config:"labels.merge_pod"`
 	CleanupTimeout time.Duration           `config:"cleanup_timeout" validate:"positive"`
 }
 
